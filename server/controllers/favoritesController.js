@@ -1,3 +1,13 @@
+const db = require('../models/tapdancerModels');
+
+//adds new row with a specified userID and name, but does not add anything to favoriteIDs column
+const addUser = `INSERT INTO user_info (userID, name)
+                 VALUES (${newUserID}, ${newUserName});` 
+
+
+const addFavQuery = ''
+
+
 const getAllFavorites = async (req, res, next) => {
   console.log("💥 getAllFavorites")
   console.log(req.body)
