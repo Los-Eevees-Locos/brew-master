@@ -1,3 +1,10 @@
+const db = require('../models/tapdancerModels');
+
+//adds new row with a specified userID and name, and adds empty array to favoriteIDs column
+const addUserQuery = `INSERT INTO user_info (userID, name, favoriteIDs)
+                      VALUES (${newUserID}, ${newUserName}, ARRAY[]::varchar(36)[]);`;
+
+
 const signup = async (req, res, next) => {
   console.log("💥 userController - Signup")
   const { username, password } = req.body

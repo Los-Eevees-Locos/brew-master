@@ -4,10 +4,6 @@ const getAllFavoritesQuery = `SELECT favoriteIDs
                               FROM user_info 
                               WHERE userID = ${userID};`;
 
-//adds new row with a specified userID and name, and adds empty array to favoriteIDs column
-const addUserQuery = `INSERT INTO user_info (userID, name, favoriteIDs)
-                      VALUES (${newUserID}, ${newUserName}, ARRAY[]::varchar(36)[]);`;
-
 const addFavoriteQuery = `UPDATE user_info
                           SET favoriteIDs = array_append(favoriteIDs, ${newFavoriteID})
                           WHERE userID = ${userID};`;
