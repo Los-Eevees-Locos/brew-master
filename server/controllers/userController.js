@@ -1,20 +1,22 @@
-const db = require('../models/tapdancerModels');
-const {hashPassword, comparePassword} = require('../utils/password')
-
-let userID, newUserName;
+const db = require("../models/tapdancerModels")
+const { createJwt, attachCookie } = require("../utils/jwt")
+const { hashPassword, comparePassword } = require("../utils/password")
 
 //adds new row with a specified userID and name, and adds empty array to favoriteIDs column
-const addUserQuery = `INSERT INTO user_info (userID, name, hashedpass)
-                      VALUES ('${userID}', '${newUserName}', ${hashedpass};`;
+// const addUserQuery = `INSERT INTO user_info (userID, name, hashedpass)
+//                       VALUES ('${userID}', '${newUserName}', ${hashedpass};`;
 
-const getAllUsersQuery = `SELECT name 
-                          FROM user_info;`
+const addUserQuery = `INSERT INTO users (name, password)
+                      VALUES ($1, $2)
+                      RETURNING userid, name;`
 
-const getUserFromUsername = `SELECT * from user_info WHERE name=$1`
+// const getAllUsersQuery = `SELECT name
+//                           FROM user_info;`
 
+const getUserFromUsername = `SELECT * from users WHERE name=$1`
 
 const signup = async (req, res, next) => {
-  console.log("💥 userController - Signup")
+  // console.log("💥 userController - Signup")
   const { username, password } = req.body
 
   // VALIDATE INPUTS
@@ -34,69 +36,84 @@ const signup = async (req, res, next) => {
   }
 
   // CHECK FOR EXISTING USER
-  const {rows} = await db.query(getUserFromUsername, [username])
-  const existingUser = rows[0]
+  const { rows } = await db.query(getUserFromUsername, [username])
+  const existingUser = rows ? rows[0] : null
   if (existingUser) {
     return next({
-      log: '🤢 userController.signup - User with username exists',
+      log: "🤢 userController.signup - User with username exists",
       status: 400,
-      message: "User already exists, signin instead"
+      message: "User already exists, signin instead",
     })
   }
-  
-  // HASH PASSWORD
-  const hashedPass = await hashPassword(password);
-
-
 
   try {
-    res.locals.getAllUsers = await db.query(getAllUsersQuery)
-    console.log('res.locals: ', res.locals)
+    // HASH PASSWORD
+    const hashedPass = await hashPassword(password)
+    // INSERT NEW USER
+    const { rows } = await db.query(addUserQuery, [username, hashedPass])
+
+    // CREATE JWT AND ATTACH TO COOKIE
+    const token = createJwt(rows[0].userid)
+    attachCookie(res, token)
+
+    // SEND RESPONSE
+    return res.status(201).send({ newUser: rows[0].name })
   } catch (err) {
-    return next(err)
+    return next({
+      log: `❌ userController.signup - error creating new user: ${err}`,
+      status: 500,
+      message: "Internal error",
+    })
   }
-
-  // CREATE NEW USER
-  // pass in provided password into password function and save hashed PW and name to database
-
-  try {
-    res.locals.addUser = await db.query(addUserQuery)
-    console.log('res.locals: ', res.locals)
-    return next()
-  } catch (err) {
-    return next(err)
-  }
-
-  // ATTACH COOKIE
-
-  res.send({ message: "💥 Hello from signup" })
 }
 
 const signin = async (req, res, next) => {
-  console.log("💥 userController - Signin")
+  // console.log("💥 userController - Signin")
   const { username, password } = req.body
 
   // VALIDATE INPUTS
   if (!username || !password || password.length < 4) {
     return next({
-      log: "userController.signup: Invalid inputs",
+      log: "userController.signin: Invalid inputs",
       status: 400,
       message: "Please provide valid username and password",
     })
   }
 
-  // FIND USER
+  // FIND USER BY NAME
+  // IF NONE THROW ERROR
+  const { rows } = await db.query(getUserFromUsername, [username])
+  if (!rows.length) {
+    return next({
+      log: "userController.signin: username does not exist",
+      status: 400,
+      message: "Username does not exist",
+    })
+  }
 
   // CHECK PASSWORD
+  const passMatch = await comparePassword(password, rows[0].password)
 
-  // ATTACH COOKIE
+  // IF DONT MATCH THROW ERROR
+  if (!passMatch) {
+    return next({
+      log: "userController.signin: password does not match",
+      status: 400,
+      message: "Password is incorrect",
+    })
+  } else {
+    // CREATE JWT
+    // ATTACH COOKIE TO RESPONSE OBJECT
+    const token = createJwt(rows[0].userid)
+    attachCookie(res, token)
 
-  res.send({ message: "💥 Hello from signin" })
+    // RESPOND WITH USER'S NAME
+    res.send({ name: rows[0].name })
+  }
 }
-const signout = async (req, res, next) => {
-  console.log("💥 userController - Signout")
-  console.log(req.body)
 
+const signout = async (req, res, next) => {
+  // console.log("💥 userController - Signout")
   // RESET COOKIE TO NULL
   res.cookie("token", null, {
     httpOnly: true,
@@ -104,7 +121,7 @@ const signout = async (req, res, next) => {
     expires: new Date(Date.now() + 500),
   })
 
-  res.send({ message: "💥 Hello from signout" })
+  res.send({ message: "✅ Signout successful" })
 }
 
 module.exports = { signup, signin, signout }

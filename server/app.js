@@ -26,7 +26,7 @@ app.use((err, req, res, next) => {
 
   const error = Object.assign(defaultError, err)
 
-  console.log("🤢 Error caught: ", error)
+  console.log("🤢 Error caught: ", error.log)
 
   res.status(error.status).send({ message: error.message })
 })
