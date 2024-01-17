@@ -5,7 +5,6 @@ const app = require("./app.js")
 const PORT = process.env.PORT || 3000
 console.log(process.env.PORT)
 console.log(process.env.DB_STRING)
-console.log(process.env.DERP)
 
 const start = async () => {
   // check .env variables are defined here
