@@ -5,12 +5,13 @@ const getAllFavoritesQuery = `SELECT favoriteIDs
                               WHERE userID = ${userID};`;
 
 const addFavoriteQuery = `UPDATE user_info
-                          SET favoriteIDs = array_append(favoriteIDs, ${newFavoriteID})
+                          SET favoriteIDs = array_append(favoriteIDs, ${breweryID})
                           WHERE userID = ${userID};`;
 
 const deleteFavoriteQuery = `UPDATE user_info
-                             SET favoriteIDs = array_remove(favoriteIDs, ${favoriteID})
+                             SET favoriteIDs = array_remove(favoriteIDs, ${breweryID})
                              WHERE userID = ${userID};`;
+
 
 const getAllFavorites = async (req, res, next) => {
   console.log("💥 getAllFavorites")
