@@ -3,22 +3,17 @@ dotenv.config()
 const app = require("./app.js")
 
 const PORT = process.env.PORT || 3000
-console.log(process.env.PORT)
-console.log(process.env.DB_STRING)
-console.log(process.env.DERP)
 
 const start = async () => {
   // check .env variables are defined here
-  // if (!process.env.DB_STRING) throw new Error('❌ process.env.DB_STRING must be defined')
+  if (!process.env.DB_STRING)
+    throw new Error("❌ process.env.DB_STRING must be defined")
+  if (!process.env.JWT_KEY)
+    throw new Error("❌ process.env.JWT_KEY must be defined")
+  if (!process.env.JWT_LIFETIME)
+    throw new Error("❌ process.env.JWT_LIFETIME must be defined")
 
-  // try {
-  // connect to DB Here
-  // await pg.connect(process.env.DB_STRING) or something like that
-  // console.log("🍃 Connected to the Database...")
-  // } catch (error) {
-  // console.log(error)
-  // }
-
+  // Start up application
   app.listen(PORT, () => {
     console.log(`✅ Server listening on port ${PORT}...\n🍻 Happy brewing 🍻`)
   })
