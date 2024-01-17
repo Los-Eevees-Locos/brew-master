@@ -1,10 +1,16 @@
 const db = require('../models/tapdancerModels');
+const {hashPassword, comparePassword} = require('../utils/password')
+
+let userID, newUserName;
 
 //adds new row with a specified userID and name, and adds empty array to favoriteIDs column
-const addUserQuery = `INSERT INTO user_info (userID, name, favoriteIDs)
-                      VALUES (${UserID}, ${newUserName}, ARRAY[]::varchar(36)[]);`;
+const addUserQuery = `INSERT INTO user_info (userID, name, hashedpass)
+                      VALUES ('${userID}', '${newUserName}', ${hashedpass};`;
 
-const getUserQuery = ``
+const getAllUsersQuery = `SELECT name 
+                          FROM user_info;`
+
+const getUserFromUsername = `SELECT * from user_info WHERE name=$1`
 
 
 const signup = async (req, res, next) => {
@@ -28,8 +34,38 @@ const signup = async (req, res, next) => {
   }
 
   // CHECK FOR EXISTING USER
+  const {rows} = await db.query(getUserFromUsername, [username])
+  const existingUser = rows[0]
+  if (existingUser) {
+    return next({
+      log: '🤢 userController.signup - User with username exists',
+      status: 400,
+      message: "User already exists, signin instead"
+    })
+  }
+  
+  // HASH PASSWORD
+  const hashedPass = await hashPassword(password);
+
+
+
+  try {
+    res.locals.getAllUsers = await db.query(getAllUsersQuery)
+    console.log('res.locals: ', res.locals)
+  } catch (err) {
+    return next(err)
+  }
 
   // CREATE NEW USER
+  // pass in provided password into password function and save hashed PW and name to database
+
+  try {
+    res.locals.addUser = await db.query(addUserQuery)
+    console.log('res.locals: ', res.locals)
+    return next()
+  } catch (err) {
+    return next(err)
+  }
 
   // ATTACH COOKIE
 
