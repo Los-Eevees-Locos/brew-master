@@ -1,11 +1,11 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg")
 
-const PG_URI = process.env.DB_STRING;
-               
+const PG_URI = process.env.DB_STRING
+
 // created new pool using the connection string above
 const pool = new Pool({
-  connectionString: PG_URI
-});
+  connectionString: PG_URI,
+})
 
 // Adding some notes about the database here will be helpful for future you or other developers.
 // Schema for the database can be found below:
@@ -16,9 +16,9 @@ const pool = new Pool({
 // This will be required in the controllers to be the access point to the database
 module.exports = {
   query: (text, params, callback) => {
-    console.log('executed query', text);
-    console.log('executed query', params);
-    console.log('executed query', callback);
-    return pool.query(text, params, callback);
-  }
-};
+    console.log("executed query", text)
+    console.log("query params", params)
+    // console.log('executed query', callback);
+    return pool.query(text, params, callback)
+  },
+}
