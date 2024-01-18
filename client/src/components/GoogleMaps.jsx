@@ -9,45 +9,53 @@ import {
 
 const GoogleMaps = (props) => {
   const breweries = props.breweries.slice(0, 10);
-  const info = [];
-  for (let i = 0; i < 10; i++) {
-    info.push(false);
-  }
-  const [open, setOpen] = useState(info);
-  let id = 0;
+  console.log(breweries);
+
+  const [open, setOpen] = useState('');
+
   return (
     <div>
       <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-        <div style={{ height: '50vh' }}>
+        <div
+          style={{ height: '50vh', minWidth: '500px', border: '1px solid red' }}
+        >
           <Map zoom={9} center={{ lat: props.lat, lng: props.lng }}>
             {breweries.map((brew) => {
-              id++;
               return (
-                <>
+                <div key={brew.id + `${Math.floor(Math.random() * 100)}`}>
                   <Marker
-                    key={brew.id}
-                    id={id}
                     position={{
                       lat: Number(brew.latitude),
                       lng: Number(brew.longitude),
                     }}
-                    onClick={() => setOpen((open[id] = true))}
+                    onClick={() => setOpen(brew.id)}
                   ></Marker>
-                  {open[id] && (
+                  {open && open === brew.id && (
                     <InfoWindow
                       position={{
                         lat: Number(brew.latitude),
                         lng: Number(brew.longitude),
                       }}
-                      onCloseClick={() => setOpen((open[id] = true))}
+                      onCloseClick={() => setOpen('')}
                     >
                       <p style={{ color: 'black' }}>
-                        {brew.name} {brew.address_1} {brew.phone}{' '}
-                        {brew.website_url}
+                        <strong>{brew.name}</strong>
+                        <br></br>
+                        {brew.address_1}
+                        <br></br>
+                        {brew.phone}
+                        <br></br>
+                        <a
+                          href={brew.website_url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          {brew.website_url}
+                        </a>
                       </p>
                     </InfoWindow>
                   )}
-                </>
+                </div>
               );
             })}
           </Map>
